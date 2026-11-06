@@ -107,6 +107,15 @@ def read_reply(client):
     return head[1], socket.inet_ntop(family, addr), port
 
 
+def assert_closed_by_proxy(client):
+    """The proxy dropped the connection: either a clean EOF or, when it closes
+    with unread data still queued (macOS does this), a TCP reset."""
+    try:
+        assert client.recv(16) == b""
+    except ConnectionResetError:
+        pass
+
+
 def connect_request(atyp, address, port, cmd=1):
     if atyp == ATYP_IPV4:
         addr = socket.inet_aton(address)
@@ -181,14 +190,14 @@ def test_unsupported_address_type(proxy):
 def test_wrong_version_closes_connection(proxy):
     with open_client(proxy) as client:
         client.sendall(b"\x04\x01\x00\x50")
-        assert client.recv(16) == b""
+        assert_closed_by_proxy(client)
 
 
 def test_wrong_version_in_request_closes_connection(proxy):
     with open_client(proxy) as client:
         greet(client)
         client.sendall(b"\x04\x01\x00\x01")
-        assert client.recv(16) == b""
+        assert_closed_by_proxy(client)
 
 
 def test_resolution_failure_is_host_unreachable(proxy, monkeypatch):
@@ -247,7 +256,7 @@ def test_set_outbound_closes_open_connections(proxy, echo_server):
         closed = proxy.set_outbound("127.0.0.2", socket.AF_INET)
         assert closed == 1
         assert proxy.outbound == ("127.0.0.2", socket.AF_INET)
-        assert client.recv(16) == b""
+        assert_closed_by_proxy(client)
 
 
 def test_set_outbound_without_connections(proxy):
