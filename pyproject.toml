@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "socksvia"
-version = "0.1.0"
+version = "0.1.1"
 description = "Tiny SOCKS5 proxy that routes outbound traffic through the network interface you choose."
 readme = "README.md"
 requires-python = ">=3.10"
