@@ -8,3 +8,7 @@ This file is generated automatically by
 do not edit the entries below by hand.
 
 <!-- version list -->
+
+## v0.1.0 (2026-11-06)
+
+- Initial Release
