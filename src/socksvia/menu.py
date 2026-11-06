@@ -13,28 +13,45 @@ def print_interfaces(interfaces, current_ip=None):
             print(f" {mark}{index:>2}) {line}")
 
 
+class NoInterfaceChosen(SystemExit):
+    """No interface was chosen: none is available, or the user cancelled.
+
+    It is a ``SystemExit``, so if nobody catches it the program stops with the
+    message, exactly as before; callers that can recover catch this class only.
+    """
+
+
+def _default_choice(interfaces, current_ip):
+    """Index and label of the entry picked by Enter: the current one, else the first."""
+    for index, iface in enumerate(interfaces):
+        if current_ip is not None and iface.ip == current_ip:
+            return index, "keep current [*]"
+    return 0, "1"
+
+
+def _parse_choice(answer, count):
+    """Zero-based index for a valid ``1..count`` answer, otherwise ``None``."""
+    if answer.isdecimal() and 1 <= int(answer) <= count:
+        return int(answer) - 1
+    return None
+
+
 def choose_interface(interfaces, current_ip=None):
     """
     Numbered menu, ``update-alternatives`` style.
 
     Enter = current interface (if any), otherwise the first entry.
-    Raises ``SystemExit`` if there is nothing to choose or the user cancels.
+    Raises ``NoInterfaceChosen`` if there is nothing to choose or the user cancels.
     """
     if not interfaces:
-        raise SystemExit("No usable network interface found.")
+        raise NoInterfaceChosen("No usable network interface found.")
 
     if len(interfaces) == 1:
         only = interfaces[0]
         print(f"Found a single usable interface: {only}")
         return only
 
-    default = 0
-    default_label = "1"
-    for index, iface in enumerate(interfaces):
-        if current_ip is not None and iface.ip == current_ip:
-            default = index
-            default_label = "keep current [*]"
-            break
+    default, default_label = _default_choice(interfaces, current_ip)
 
     print()
     print("Available network interfaces:")
@@ -51,14 +68,13 @@ def choose_interface(interfaces, current_ip=None):
             answer = input(prompt).strip()
         except (EOFError, KeyboardInterrupt):
             print()
-            raise SystemExit("Cancelled.") from None
+            raise NoInterfaceChosen("Cancelled.") from None
 
         if answer.lower() in ("q", "quit", "exit"):
-            raise SystemExit("Cancelled.")
+            raise NoInterfaceChosen("Cancelled.")
         if answer == "":
             return interfaces[default]
-        if answer.isdigit():
-            choice = int(answer)
-            if 1 <= choice <= len(interfaces):
-                return interfaces[choice - 1]
+        index = _parse_choice(answer, len(interfaces))
+        if index is not None:
+            return interfaces[index]
         print(f"  Invalid choice. Enter a number between 1 and {len(interfaces)}.")

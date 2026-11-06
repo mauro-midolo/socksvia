@@ -7,6 +7,7 @@ import pytest
 from socksvia import console
 from socksvia.console import KeyReader, LogGate, reselect_interface
 from socksvia.interfaces import Interface
+from socksvia.menu import NoInterfaceChosen
 
 
 class FakeServer:
@@ -86,7 +87,7 @@ def test_reselect_same_interface_is_noop(monkeypatch, capsys, gate):
 def test_reselect_cancelled(monkeypatch, capsys, gate):
     server = FakeServer()
     labels = {"current": "eth0: 10.0.0.1"}
-    _patch_menu(monkeypatch, SystemExit("Cancelled."))
+    _patch_menu(monkeypatch, NoInterfaceChosen("Cancelled."))
 
     reselect_interface(server, labels, gate)
 

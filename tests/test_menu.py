@@ -3,7 +3,7 @@ import socket
 import pytest
 
 from socksvia.interfaces import Interface
-from socksvia.menu import choose_interface, print_interfaces
+from socksvia.menu import NoInterfaceChosen, choose_interface, print_interfaces
 
 
 def feed_input(monkeypatch, *answers):
@@ -81,3 +81,19 @@ def test_eof_or_ctrl_c_cancels(monkeypatch, sample_interfaces, exc):
     feed_input(monkeypatch, exc)
     with pytest.raises(SystemExit, match="Cancelled"):
         choose_interface(sample_interfaces)
+
+
+def test_superscript_digit_is_rejected_not_crashing(monkeypatch, capsys, sample_interfaces):
+    # "²".isdigit() is True but int("²") raises: it must count as an invalid choice.
+    feed_input(monkeypatch, "²", "1")
+    assert choose_interface(sample_interfaces) is sample_interfaces[0]
+    assert "Invalid choice" in capsys.readouterr().out
+
+
+def test_cancel_is_a_system_exit(monkeypatch, sample_interfaces):
+    """Uncaught, cancelling still stops the program with the message."""
+    feed_input(monkeypatch, "q")
+    with pytest.raises(NoInterfaceChosen) as excinfo:
+        choose_interface(sample_interfaces)
+    assert isinstance(excinfo.value, SystemExit)
+    assert str(excinfo.value) == "Cancelled."

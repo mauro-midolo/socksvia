@@ -8,7 +8,7 @@ import sys
 import time
 
 from socksvia.interfaces import enumerate_interfaces
-from socksvia.menu import choose_interface
+from socksvia.menu import NoInterfaceChosen, choose_interface
 from socksvia.server import check_source_ip, ip_family
 
 log = logging.getLogger("socksvia")
@@ -91,7 +91,7 @@ def reselect_interface(server, labels, log_gate):
     log_gate.paused = True
     try:
         chosen = choose_interface(enumerate_interfaces(), current_ip)
-    except SystemExit as exc:
+    except NoInterfaceChosen as exc:
         print(f"{exc} Staying on {labels['current']}.")
         return
     finally:

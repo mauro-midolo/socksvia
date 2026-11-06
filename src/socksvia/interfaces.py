@@ -61,37 +61,52 @@ def _sockaddr_to_ip(sockaddr_ptr):
     return None, None
 
 
+def _adapter_interfaces(entry):
+    """All the unicast addresses of one Windows adapter (IP_ADAPTER_ADDRESSES)."""
+    name = entry.FriendlyName or (entry.AdapterName or b"").decode()
+    found = []
+    unicast = entry.FirstUnicastAddress
+    while unicast:
+        family, ip = _sockaddr_to_ip(unicast.contents.Address.lpSockaddr)
+        if ip:
+            found.append(Interface(name, ip, family, entry.Description or ""))
+        unicast = unicast.contents.Next
+    return found
+
+
 def _enumerate_windows():
     """Use GetAdaptersAddresses (iphlpapi) to get the "friendly" adapter names."""
 
-    class SOCKET_ADDRESS(ctypes.Structure):
+    # ctypes mirrors of the Win32 structures SOCKET_ADDRESS,
+    # IP_ADAPTER_UNICAST_ADDRESS and IP_ADAPTER_ADDRESSES (same field layout).
+    class SocketAddress(ctypes.Structure):
         _fields_ = [
             ("lpSockaddr", ctypes.c_void_p),
             ("iSockaddrLength", ctypes.c_int),
         ]
 
-    class IP_ADAPTER_UNICAST_ADDRESS(ctypes.Structure):
+    class IpAdapterUnicastAddress(ctypes.Structure):
         pass
 
-    IP_ADAPTER_UNICAST_ADDRESS._fields_ = [
+    IpAdapterUnicastAddress._fields_ = [
         ("Length", ctypes.c_ulong),
         ("Flags", ctypes.c_ulong),
-        ("Next", ctypes.POINTER(IP_ADAPTER_UNICAST_ADDRESS)),
-        ("Address", SOCKET_ADDRESS),
+        ("Next", ctypes.POINTER(IpAdapterUnicastAddress)),
+        ("Address", SocketAddress),
         ("PrefixOrigin", ctypes.c_int),
         ("SuffixOrigin", ctypes.c_int),
         ("DadState", ctypes.c_int),
     ]
 
-    class IP_ADAPTER_ADDRESSES(ctypes.Structure):
+    class IpAdapterAddresses(ctypes.Structure):
         pass
 
-    IP_ADAPTER_ADDRESSES._fields_ = [
+    IpAdapterAddresses._fields_ = [
         ("Length", ctypes.c_ulong),
         ("IfIndex", ctypes.c_ulong),
-        ("Next", ctypes.POINTER(IP_ADAPTER_ADDRESSES)),
+        ("Next", ctypes.POINTER(IpAdapterAddresses)),
         ("AdapterName", ctypes.c_char_p),
-        ("FirstUnicastAddress", ctypes.POINTER(IP_ADAPTER_UNICAST_ADDRESS)),
+        ("FirstUnicastAddress", ctypes.POINTER(IpAdapterUnicastAddress)),
         ("FirstAnycastAddress", ctypes.c_void_p),
         ("FirstMulticastAddress", ctypes.c_void_p),
         ("FirstDnsServerAddress", ctypes.c_void_p),
@@ -130,17 +145,11 @@ def _enumerate_windows():
         raise OSError(f"GetAdaptersAddresses returned {result}")
 
     interfaces = []
-    adapter = ctypes.cast(buffer, ctypes.POINTER(IP_ADAPTER_ADDRESSES))
+    adapter = ctypes.cast(buffer, ctypes.POINTER(IpAdapterAddresses))
     while adapter:
         entry = adapter.contents
         if entry.OperStatus == IF_OPER_STATUS_UP and entry.IfType != IF_TYPE_SOFTWARE_LOOPBACK:
-            name = entry.FriendlyName or (entry.AdapterName or b"").decode()
-            unicast = entry.FirstUnicastAddress
-            while unicast:
-                family, ip = _sockaddr_to_ip(unicast.contents.Address.lpSockaddr)
-                if ip:
-                    interfaces.append(Interface(name, ip, family, entry.Description or ""))
-                unicast = unicast.contents.Next
+            interfaces.extend(_adapter_interfaces(entry))
         adapter = entry.Next
     return interfaces
 
@@ -194,7 +203,10 @@ def _enumerate_fallback():
     """Last resort: addresses only, without the interface name."""
     interfaces = []
     seen = set()
-    for probe_target in (("8.8.8.8", 80), ("2001:4860:4860::8888", 80)):
+    # UDP connect() sends no packet: it only asks the OS which source address it
+    # would use to reach a public host, i.e. the address of the default route.
+    probes = (("8.8.8.8", 80), ("2001:4860:4860::8888", 80))  # NOSONAR - no traffic is sent
+    for probe_target in probes:
         family = socket.AF_INET if ":" not in probe_target[0] else socket.AF_INET6
         sock = socket.socket(family, socket.SOCK_DGRAM)
         try:
