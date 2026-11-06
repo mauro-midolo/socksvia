@@ -2,9 +2,9 @@
 
 [![CI](https://github.com/mauro-midolo/socksvia/actions/workflows/ci.yml/badge.svg)](https://github.com/mauro-midolo/socksvia/actions/workflows/ci.yml)
 [![Release](https://github.com/mauro-midolo/socksvia/actions/workflows/release.yml/badge.svg)](https://github.com/mauro-midolo/socksvia/actions/workflows/release.yml)
-[![PyPI](https://img.shields.io/pypi/v/socksvia.svg)](https://pypi.org/project/socksvia/)
-[![Python](https://img.shields.io/pypi/pyversions/socksvia.svg)](https://pypi.org/project/socksvia/)
-[![License](https://img.shields.io/pypi/l/socksvia.svg)](LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/socksvia?logo=pypi&logoColor=white)](https://pypi.org/project/socksvia/)
+[![Python](https://img.shields.io/pypi/pyversions/socksvia?logo=python&logoColor=white)](https://pypi.org/project/socksvia/)
+[![License](https://img.shields.io/github/license/mauro-midolo/socksvia)](https://github.com/mauro-midolo/socksvia/blob/main/LICENSE)
 
 Tiny SOCKS5 proxy that routes traffic through the network interface you choose.
 Pure Python, no dependencies, no admin rights.
