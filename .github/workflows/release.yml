@@ -66,7 +66,7 @@ jobs:
 
       - name: Install locked release tools (python-semantic-release, twine)
         if: steps.upstream.outputs.moved != 'true'
-        run: uv sync --locked --only-group release
+        run: uv sync --locked --no-build --only-group release
 
       - name: Bump version, update changelog, build, tag, push, create GitHub Release
         id: release
