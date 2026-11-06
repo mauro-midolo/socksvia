@@ -34,14 +34,16 @@ class TestParser:
         assert args.list is True
 
     def test_port_must_be_integer(self, capsys):
+        parser = cli.build_parser()
         with pytest.raises(SystemExit) as excinfo:
-            cli.build_parser().parse_args(["--port", "abc"])
+            parser.parse_args(["--port", "abc"])
         assert excinfo.value.code == 2
         assert "invalid int value" in capsys.readouterr().err
 
     def test_version(self, capsys):
+        parser = cli.build_parser()
         with pytest.raises(SystemExit) as excinfo:
-            cli.build_parser().parse_args(["--version"])
+            parser.parse_args(["--version"])
         assert excinfo.value.code == 0
         assert capsys.readouterr().out.strip() == f"socksvia {__version__}"
 

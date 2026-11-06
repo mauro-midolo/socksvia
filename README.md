@@ -134,21 +134,26 @@ DNS lookups go through the same path.
 
 ## Development
 
+The project uses [uv](https://docs.astral.sh/uv/); the exact versions of all
+development and release tools are pinned in `uv.lock` (CI installs them with
+`uv sync --locked`).
+
 ```bash
 git clone https://github.com/mauro-midolo/socksvia
 cd socksvia
-python -m venv .venv
-source .venv/bin/activate            # Windows: .venv\Scripts\activate
-python -m pip install --upgrade pip  # pip >= 25.1 is needed for --group
-python -m pip install --group dev -e .
+uv sync            # creates .venv with socksvia (editable) + dev tools
 ```
 
 ```bash
-ruff check .
-ruff format --check .
-pytest
-python -m build && twine check --strict dist/*
+uv run ruff check .
+uv run ruff format --check .
+uv run pytest
+uv build && uv run twine check --strict dist/*
 ```
+
+After changing the dependency groups in `pyproject.toml`, run `uv lock` and
+commit `uv.lock`. Without uv, `python -m pip install --group dev -e .`
+(pip >= 25.1) also works, but does not use the locked versions.
 
 Some tests exercise platform-specific code (`getifaddrs`/`termios` on
 Linux/macOS, `iphlpapi`/`msvcrt` on Windows) and are skipped on the other

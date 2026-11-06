@@ -173,3 +173,57 @@ def test_native_windows_enumeration_runs():
     assert isinstance(result, list)
     for iface in result:
         assert iface.family in (socket.AF_INET, socket.AF_INET6)
+
+
+class _Ptr:
+    """Minimal stand-in for a ctypes POINTER: truthy, with .contents."""
+
+    def __init__(self, contents):
+        self.contents = contents
+
+    def __bool__(self):
+        return self.contents is not None
+
+
+def _unicast(sockaddr_buf, next_ptr):
+    address = type("Addr", (), {"lpSockaddr": ctypes.addressof(sockaddr_buf)})()
+    return _Ptr(type("Unicast", (), {"Address": address, "Next": next_ptr})())
+
+
+def test_windows_adapter_addresses_are_collected(monkeypatch):
+    """The per-adapter loop of the Windows enumeration, without calling Win32."""
+    monkeypatch.setattr(ifmod.sys, "platform", "linux")
+    v4 = _linux_sockaddr(socket.AF_INET, socket.inet_aton("192.168.7.7"))
+    v6 = _linux_sockaddr(socket.AF_INET6, socket.inet_pton(socket.AF_INET6, "fe80::7"))
+    chain = _unicast(v4, _unicast(v6, _Ptr(None)))
+    entry = type(
+        "Adapter",
+        (),
+        {
+            "FriendlyName": "Wi-Fi",
+            "AdapterName": b"{GUID}",
+            "Description": "Intel Wireless",
+            "FirstUnicastAddress": chain,
+        },
+    )()
+
+    result = ifmod._adapter_interfaces(entry)
+
+    assert [(i.name, i.ip, i.description) for i in result] == [
+        ("Wi-Fi", "192.168.7.7", "Intel Wireless"),
+        ("Wi-Fi", "fe80::7", "Intel Wireless"),
+    ]
+
+
+def test_windows_adapter_without_friendly_name(monkeypatch):
+    entry = type(
+        "Adapter",
+        (),
+        {
+            "FriendlyName": None,
+            "AdapterName": b"{GUID}",
+            "Description": None,
+            "FirstUnicastAddress": _Ptr(None),
+        },
+    )()
+    assert ifmod._adapter_interfaces(entry) == []
