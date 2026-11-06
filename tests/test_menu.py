@@ -33,7 +33,7 @@ def test_print_interfaces_marks_current_and_notes(capsys, sample_interfaces):
 
 
 def test_no_interfaces_exits():
-    with pytest.raises(SystemExit, match="No usable network interface"):
+    with pytest.raises(NoInterfaceChosen, match="No usable network interface"):
         choose_interface([])
 
 
@@ -72,14 +72,14 @@ def test_invalid_answers_are_retried(monkeypatch, capsys, sample_interfaces, bad
 @pytest.mark.parametrize("answer", ["q", "Q", "quit", "exit"])
 def test_quit_cancels(monkeypatch, sample_interfaces, answer):
     feed_input(monkeypatch, answer)
-    with pytest.raises(SystemExit, match="Cancelled"):
+    with pytest.raises(NoInterfaceChosen, match="Cancelled"):
         choose_interface(sample_interfaces)
 
 
 @pytest.mark.parametrize("exc", [EOFError(), KeyboardInterrupt()])
 def test_eof_or_ctrl_c_cancels(monkeypatch, sample_interfaces, exc):
     feed_input(monkeypatch, exc)
-    with pytest.raises(SystemExit, match="Cancelled"):
+    with pytest.raises(NoInterfaceChosen, match="Cancelled"):
         choose_interface(sample_interfaces)
 
 
@@ -90,10 +90,8 @@ def test_superscript_digit_is_rejected_not_crashing(monkeypatch, capsys, sample_
     assert "Invalid choice" in capsys.readouterr().out
 
 
-def test_cancel_is_a_system_exit(monkeypatch, sample_interfaces):
-    """Uncaught, cancelling still stops the program with the message."""
+def test_cancel_raises_no_interface_chosen(monkeypatch, sample_interfaces):
     feed_input(monkeypatch, "q")
     with pytest.raises(NoInterfaceChosen) as excinfo:
         choose_interface(sample_interfaces)
-    assert isinstance(excinfo.value, SystemExit)
     assert str(excinfo.value) == "Cancelled."

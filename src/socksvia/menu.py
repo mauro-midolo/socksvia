@@ -13,11 +13,11 @@ def print_interfaces(interfaces, current_ip=None):
             print(f" {mark}{index:>2}) {line}")
 
 
-class NoInterfaceChosen(SystemExit):
+class NoInterfaceChosen(Exception):
     """No interface was chosen: none is available, or the user cancelled.
 
-    It is a ``SystemExit``, so if nobody catches it the program stops with the
-    message, exactly as before; callers that can recover catch this class only.
+    At startup the CLI turns it into an exit with the message; while the proxy
+    runs, the ``r`` re-selection catches it and keeps the current interface.
     """
 
 

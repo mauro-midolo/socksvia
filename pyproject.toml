@@ -65,6 +65,8 @@ packages = ["src/socksvia"]
 [tool.pytest.ini_options]
 minversion = "8.0"
 testpaths = ["tests"]
+# Import socksvia from src/ without installing it (CI installs wheels only).
+pythonpath = ["src"]
 addopts = ["-ra", "--strict-markers"]
 markers = [
     "posix_only: test uses POSIX-only APIs (getifaddrs, termios)",

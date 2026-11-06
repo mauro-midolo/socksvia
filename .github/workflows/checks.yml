@@ -1,7 +1,10 @@
 # Reusable workflow: lint + tests + build. Called by ci.yml and release.yml.
 #
-# Tools are installed from uv.lock (`uv sync --locked`): exact versions with
-# hashes, wheels only, no unpinned `pip install`.
+# Tools are installed from uv.lock with `uv sync --locked --no-build`: exact
+# versions with hashes, prebuilt wheels only (no sdist build scripts are run),
+# no unpinned `pip install`. The tests import socksvia straight from src/
+# (pytest `pythonpath`), so the project itself is never built here; the
+# `build` job is the only place that builds it, on purpose.
 name: Checks
 
 on:
@@ -24,7 +27,7 @@ jobs:
           version: ${{ env.UV_VERSION }}
           python-version: "3.13"
       - name: Install locked dev tools
-        run: uv sync --locked --only-group dev
+        run: uv sync --locked --no-build --only-group dev
       - name: ruff check
         run: uv run --no-sync ruff check --output-format=github .
       - name: ruff format
@@ -46,8 +49,8 @@ jobs:
         with:
           version: ${{ env.UV_VERSION }}
           python-version: ${{ matrix.python-version }}
-      - name: Install package and locked dev tools
-        run: uv sync --locked
+      - name: Install locked dev tools (wheels only)
+        run: uv sync --locked --no-build --no-install-project
       - name: pytest
         run: uv run --no-sync pytest
 
@@ -61,7 +64,7 @@ jobs:
           version: ${{ env.UV_VERSION }}
           python-version: "3.13"
       - name: Install locked dev tools
-        run: uv sync --locked --only-group dev
+        run: uv sync --locked --no-build --only-group dev
       - name: Build
         run: uv build
       - name: twine check

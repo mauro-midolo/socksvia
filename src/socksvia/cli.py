@@ -7,7 +7,7 @@ import threading
 from socksvia import __version__
 from socksvia.console import KeyReader, LogGate, reselect_interface
 from socksvia.interfaces import enumerate_interfaces
-from socksvia.menu import choose_interface, print_interfaces
+from socksvia.menu import NoInterfaceChosen, choose_interface, print_interfaces
 from socksvia.server import Socks5Handler, ThreadedSocksServer, check_source_ip, ip_family
 
 log = logging.getLogger("socksvia")
@@ -101,7 +101,10 @@ def main(argv=None):
         external_ip = args.external
         label = external_ip
     else:
-        chosen = choose_interface(enumerate_interfaces())
+        try:
+            chosen = choose_interface(enumerate_interfaces())
+        except NoInterfaceChosen as exc:
+            raise SystemExit(str(exc)) from None
         external_ip = chosen.ip
         label = str(chosen)
 

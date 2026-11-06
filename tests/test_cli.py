@@ -132,3 +132,26 @@ class TestMain:
         )
         assert cli.run_until_stopped(server, "lo: 127.0.0.1", cli.LogGate()) == 0
         assert "input is not interactive" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    ("interfaces", "answer", "message"),
+    [
+        ([], None, "No usable network interface found."),
+        (
+            [
+                Interface("eth0", "10.0.0.1", socket.AF_INET),
+                Interface("eth1", "10.0.0.2", socket.AF_INET),
+            ],
+            "q",
+            "Cancelled.",
+        ),
+    ],
+)
+def test_menu_without_choice_exits_with_message(monkeypatch, interfaces, answer, message):
+    """At startup, no choice still stops the program with the message, as before."""
+    monkeypatch.setattr(cli, "enumerate_interfaces", lambda: interfaces)
+    monkeypatch.setattr("builtins.input", lambda _prompt="": answer)
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main([])
+    assert excinfo.value.code == message
