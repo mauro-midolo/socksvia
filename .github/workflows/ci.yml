@@ -1,0 +1,21 @@
+# Pull requests and pushes to any branch other than main:
+# lint + tests + build, never publishes anything.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    uses: ./.github/workflows/checks.yml
