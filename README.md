@@ -6,6 +6,9 @@
 [![Python](https://img.shields.io/pypi/pyversions/socksvia?logo=python&logoColor=white)](https://pypi.org/project/socksvia/)
 [![License](https://img.shields.io/github/license/mauro-midolo/socksvia)](https://github.com/mauro-midolo/socksvia/blob/main/LICENSE)
 
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=mauro-midolo_socksvia&metric=bugs)](https://sonarcloud.io/project/issues?id=mauro-midolo_socksvia&resolved=false&types=BUG)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=mauro-midolo_socksvia&metric=vulnerabilities)](https://sonarcloud.io/project/issues?id=mauro-midolo_socksvia&resolved=false&types=VULNERABILITY)
+
 Tiny SOCKS5 proxy that routes traffic through the network interface you choose.
 Pure Python, no dependencies, no admin rights.
 
