@@ -84,32 +84,6 @@ While the proxy runs:
 | `-v`, `--verbose`     |             | debug logging                            |
 | `--version`           |             | print the version and exit               |
 
-### Browser example
-
-Chrome / Edge with a separate profile, so your normal browsing is unaffected
-(Windows `cmd`):
-
-```bat
-chrome.exe --user-data-dir="%USERPROFILE%\chrome-nic2" ^
-           --proxy-server="socks5://127.0.0.1:1080"
-```
-
-Linux / macOS:
-
-```bash
-google-chrome --user-data-dir="$HOME/.chrome-nic2" --proxy-server="socks5://127.0.0.1:1080"
-```
-
-Firefox: *Settings → Network Settings → Manual proxy configuration →
-SOCKS Host `127.0.0.1`, Port `1080`, SOCKS v5*, and tick
-*Proxy DNS when using SOCKS v5*.
-
-`curl`:
-
-```bash
-curl --socks5-hostname 127.0.0.1:1080 https://ifconfig.me
-```
-
 ## How it works and limitations
 
 `socksvia` binds every outbound socket to the source IP of the interface you
