@@ -106,56 +106,6 @@ DNS lookups go through the same path.
 - The address family follows the chosen interface: with an IPv4 interface,
   IPv6-only destinations are unreachable (and vice versa).
 
-## Development
-
-The project uses [uv](https://docs.astral.sh/uv/); the exact versions of all
-development and release tools are pinned in `uv.lock` (CI installs them with
-`uv sync --locked`).
-
-```bash
-git clone https://github.com/mauro-midolo/socksvia
-cd socksvia
-uv sync            # creates .venv with socksvia (editable) + dev tools
-```
-
-```bash
-uv run ruff check .
-uv run ruff format --check .
-uv run pytest
-uv build && uv run twine check --strict dist/*
-```
-
-After changing the dependency groups in `pyproject.toml`, run `uv lock` and
-commit `uv.lock`. Without uv, `python -m pip install --group dev -e .`
-(pip >= 25.1) also works, but does not use the locked versions.
-
-Some tests exercise platform-specific code (`getifaddrs`/`termios` on
-Linux/macOS, `iphlpapi`/`msvcrt` on Windows) and are skipped on the other
-platforms; CI runs the suite on all three.
-
-### Commit messages and releases
-
-Releases are fully automatic: every push to `main` runs the checks and then
-[python-semantic-release](https://python-semantic-release.readthedocs.io/),
-which reads [Conventional Commits](https://www.conventionalcommits.org/) since
-the last tag:
-
-| Commit                                       | Release (while on 0.x) |
-|----------------------------------------------|------------------------|
-| `fix: ...`, `perf: ...`                      | patch `0.1.0 → 0.1.1`  |
-| `feat: ...`                                  | minor `0.1.0 → 0.2.0`  |
-| `feat!: ...` / `BREAKING CHANGE:` footer     | minor `0.1.0 → 0.2.0`  |
-| `docs:`, `chore:`, `ci:`, `test:`, `refactor:` ... | no release       |
-
-After `1.0.0` a breaking change bumps the major version. When a release is
-due, the workflow updates the version in `pyproject.toml` and
-`src/socksvia/__init__.py`, updates [CHANGELOG.md](CHANGELOG.md), commits,
-tags `vX.Y.Z`, creates a GitHub Release with the wheel and sdist, and publishes
-to PyPI with Trusted Publishing.
-
-When merging pull requests with *squash*, the PR title becomes the commit
-message: write it as a Conventional Commit.
-
 ## License
 
 [Apache License 2.0](LICENSE)
