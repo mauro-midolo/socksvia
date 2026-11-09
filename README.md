@@ -28,13 +28,46 @@ Start `socksvia`, pick the interface from a menu, and point the browser at
 ## Installation
 
 ```bash
-pipx install socksvia
+pip install socksvia
 ```
 
-or, in any virtual environment:
+Then just type `socksvia`.
+
+### Windows: "socksvia is not recognized"
+
+pip puts the `socksvia` command in the *Scripts* folder of the Python that
+installed it, but it never changes PATH. Some Windows Python installations
+(the Python install manager, the Microsoft Store) do not put that folder on
+PATH either, so the command is not found right after `pip install`.
+
+Run this once (no administrator rights needed), then open a **new** terminal:
 
 ```bash
-pip install socksvia
+py -m socksvia --add-to-path
+```
+
+It adds that *Scripts* folder to your **user** PATH, so `socksvia` (and the
+commands of other packages installed with the same Python) work from then on.
+If you run `py -m socksvia` while the command is not on PATH, socksvia prints
+this same tip. With several Pythons installed, use the one you installed
+socksvia with, e.g. `py -3.14 -m socksvia --add-to-path`.
+
+Prefer to do it by hand? Start → *Edit environment variables for your
+account* → **Path** → **Edit** → **New**, and paste the folder that pip
+printed in its "is not on PATH" warning.
+
+Alternatively, install it with [uv](https://docs.astral.sh/uv/) or
+[pipx](https://pipx.pypa.io/), which manage their own folder on PATH (after a
+one-time `uv tool update-shell` / `pipx ensurepath`):
+
+```bash
+uv tool install socksvia
+```
+
+### Upgrade
+
+```bash
+pip install --upgrade socksvia
 ```
 
 ## Usage
@@ -82,6 +115,7 @@ While the proxy runs:
 | `-p`, `--port PORT`   | `1080`      | listen port                              |
 | `--list`              |             | list the interfaces and exit             |
 | `-v`, `--verbose`     |             | debug logging                            |
+| `--add-to-path`       |             | put the `socksvia` command on your user PATH (Windows; on Linux/macOS print how to) and exit |
 | `--version`           |             | print the version and exit               |
 
 ## How it works and limitations

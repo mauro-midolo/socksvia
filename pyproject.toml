@@ -70,7 +70,7 @@ pythonpath = ["src"]
 addopts = ["-ra", "--strict-markers"]
 markers = [
     "posix_only: test uses POSIX-only APIs (getifaddrs, termios)",
-    "windows_only: test uses Windows-only APIs (iphlpapi, msvcrt)",
+    "windows_only: test uses Windows-only APIs (iphlpapi, msvcrt, registry)",
 ]
 
 # ---------------------------------------------------------------------------
