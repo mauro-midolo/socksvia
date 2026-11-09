@@ -4,6 +4,6 @@ Pure standard library, no dependencies, no administrator rights required
 (it listens on localhost, on a port above 1024).
 """
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 __all__ = ["__version__"]

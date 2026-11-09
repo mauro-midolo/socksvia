@@ -9,6 +9,22 @@ do not edit the entries below by hand.
 
 <!-- version list -->
 
+## v0.2.0 (2026-11-09)
+
+### Documentation
+
+- Remove Browser example section from README
+  ([`f6351a2`](https://github.com/mauro-midolo/socksvia/commit/f6351a2d3d98f148809c6cb554cffd2792d06ab8))
+
+- Remove Development section from README
+  ([`7a4d3d9`](https://github.com/mauro-midolo/socksvia/commit/7a4d3d9c5100c2310e249e38ea3e6abf74f6dcca))
+
+### Features
+
+- Add --add-to-path to make the socksvia command work after pip install
+  ([`5cd3c22`](https://github.com/mauro-midolo/socksvia/commit/5cd3c22c5ec6c773f6e9e9cf2f39c6c3c775fb54))
+
+
 ## v0.1.1 (2026-11-06)
 
 ### Bug Fixes
