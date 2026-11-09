@@ -8,6 +8,7 @@ from socksvia import __version__
 from socksvia.console import KeyReader, LogGate, reselect_interface
 from socksvia.interfaces import enumerate_interfaces
 from socksvia.menu import NoInterfaceChosen, choose_interface, print_interfaces
+from socksvia.pathsetup import add_to_path
 from socksvia.server import Socks5Handler, ThreadedSocksServer, check_source_ip, ip_family
 
 log = logging.getLogger("socksvia")
@@ -27,6 +28,12 @@ def build_parser():
     parser.add_argument("--port", "-p", type=int, default=1080, help="Listen port (default: 1080)")
     parser.add_argument("--list", action="store_true", help="List the interfaces and exit")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose logging")
+    parser.add_argument(
+        "--add-to-path",
+        action="store_true",
+        help="put the socksvia command on your user PATH (Windows; on Linux/macOS "
+        "print how to) and exit",
+    )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     return parser
 
@@ -92,6 +99,9 @@ def run_until_stopped(server, label, log_gate):
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
+    if args.add_to_path:
+        return add_to_path()
+
     log_gate = setup_logging(args.verbose)
 
     if args.list:
